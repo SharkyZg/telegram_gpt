@@ -1,40 +1,47 @@
 import os
 import json
 import asyncio
-from dotenv import load_dotenv
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, CallbackContext, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
-
-# Load environment variables
-load_dotenv()
-
 # LangChain setup
 template = """
-    {input}
-    """
+{input}
+"""
 summary_prompt = PromptTemplate.from_template(template)
-summary_chain = summary_prompt | ChatOpenAI(model="gpt-4o", temperature=0)
+summary_chain = summary_prompt | ChatOpenAI(model=os.getenv("GPT_MODEL"), temperature=os.getenv("MODEL_TEMPERATURE"))
 
 # Start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != int(os.getenv("AUTHORIZED_USER_ID")):
-        await update.message.reply_text("You are not authorized to use this bot. Your ID is: "+str(update.effective_user.id))
+    authorized_user_id = os.getenv("AUTHORIZED_USER_ID")
+    if update.effective_user.id != int(authorized_user_id):
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="You are not authorized to use this bot. Your ID is: " + str(update.effective_user.id)
+        )
         return
     await update.message.reply_text("Hi! I'm your LangChain-powered bot. Ask me anything!")
 
 # Message handler
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != int(os.getenv("AUTHORIZED_USER_ID")):
-        await update.message.reply_text("You are not authorized to use this bot. Your ID is: "+str(update.effective_user.id))
+    authorized_user_id = os.getenv("AUTHORIZED_USER_ID")
+    if update.effective_user.id != int(authorized_user_id):
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="You are not authorized to use this bot. Your ID is: " + str(update.effective_user.id)
+        )
         return
 
     user_input = update.message.text
     try:
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(None, summary_chain.invoke, {"input": user_input})
-        await update.message.reply_text(response.content)
+        # If summary_chain.invoke is synchronous, run it in an executor to avoid blocking
+        response = await asyncio.get_running_loop().run_in_executor(
+            None, summary_chain.invoke, {"input": user_input}
+        )
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=response.content)
     except Exception as e:
         await update.message.reply_text(f"Error: {str(e)}")
 
@@ -43,20 +50,33 @@ def lambda_handler(event, context):
     """
     The entry point for AWS Lambda to handle the Telegram updates.
     """
-    print("event: ", event)
+    print("Event received:", event)
     try:
-        # Parse the Telegram update from the event body
-        update = Update.de_json(json.loads(event['body']), None)
-        
-        # Create the application, set it up with the token
-        application = Application.builder().token(os.getenv("TELEGRAM_TOKEN")).build()
 
-        # Add handlers
-        application.add_handler(CommandHandler("start", start))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+        # Define an async function to initialize and process the update
+        async def process_update_async():
+            # Create the application, set it up with the token
+            telegram_token = os.getenv("TELEGRAM_TOKEN")
+            application = Application.builder().token(telegram_token).build()
+            await application.initialize()
+            # Add handlers
+            application.add_handler(CommandHandler("start", start))
+            application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-        # Manually call the handler for the update
-        application.process_update(update)
+            # Get the bot instance
+            bot = application.bot
+
+            # Parse the Telegram update from the event body
+            update = Update.de_json(json.loads(event['body']), bot)
+            
+            # Process the update
+            await application.process_update(update)
+
+            # Shutdown the application
+            await application.shutdown()
+
+        # Run the async function
+        asyncio.run(process_update_async())
 
         return {
             'statusCode': 200,
@@ -64,8 +84,8 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
+        print(f"Error: {str(e)}")
         return {
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})
         }
-

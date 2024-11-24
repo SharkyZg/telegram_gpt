@@ -16,7 +16,7 @@ COPY ./requirements.txt .
 COPY .env .
 
 # Install Python dependencies from the requirements.txt file
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 RUN chmod -R 755 /var
 RUN chmod -R 755 /var/task
