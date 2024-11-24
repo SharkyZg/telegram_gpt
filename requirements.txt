@@ -1,0 +1,7 @@
+pydantic==1.10.12
+telegram
+python-telegram-bot
+python-dotenv
+langchain_core
+langchain_openai
+jiter==0.4.0
