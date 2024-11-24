@@ -50,7 +50,6 @@ def lambda_handler(event, context):
     """
     The entry point for AWS Lambda to handle the Telegram updates.
     """
-    print("Event received:", event)
     try:
 
         # Define an async function to initialize and process the update
