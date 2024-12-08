@@ -1,4 +1,3 @@
-# Start with the Amazon Linux base image
 FROM python:3.9-slim
 
 # Set environment variables for Python version and working directory
@@ -16,7 +15,3 @@ COPY ./requirements.txt .
 
 # Install Python dependencies from the requirements.txt file
 RUN pip3 install -r requirements.txt
-
-RUN chmod -R 755 /var
-RUN chmod -R 755 /var/task
-RUN chmod +x /var/task/main.py
