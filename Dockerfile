@@ -10,3 +10,11 @@ COPY ./requirements.txt .
 
 # Install Python dependencies from the requirements.txt file
 RUN pip3 install -r requirements.txt
+
+WORKDIR /app
+
+# Expose the port your application will run on
+EXPOSE 8080
+
+# Command to run the application
+CMD ["python", "main.py"]
