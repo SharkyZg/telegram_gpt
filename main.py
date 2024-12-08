@@ -1,5 +1,4 @@
 import os
-import json
 from flask import Flask, request, jsonify
 import asyncio
 import boto3
@@ -7,23 +6,14 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
 from langchain_community.chat_message_histories import DynamoDBChatMessageHistory
 from langchain.schema import HumanMessage, AIMessage
 
 # Initialize a boto3 session
 aws_session = boto3.Session(region_name=os.getenv("AWS_REGION"))
 
-# DynamoDB setup
-dynamodb = boto3.resource('dynamodb', region_name=os.getenv("AWS_REGION"),
-                          aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-                          aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"))
-
-invoice_chat_table = dynamodb.Table('InvoiceChat')
-
 # New Flask app initialization
 app = Flask(__name__)
-
 
 # LangChain setup
 template = """
@@ -41,9 +31,8 @@ summary_chain = summary_prompt | ChatOpenAI(model=os.getenv("GPT_MODEL"), temper
 
 # Updated memory manager
 def get_chat_history(user_id):
-    table_name = "InvoiceChat"
     chat_history = DynamoDBChatMessageHistory(
-        table_name=table_name,
+        table_name="InvoiceChat",
         session_id=str(user_id),  # Use user_id as session identifier
         boto3_session=aws_session,  # Pass the boto3 session
         primary_key_name="UserID",  # Use the correct primary key
