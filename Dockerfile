@@ -5,8 +5,8 @@ ENV LANG=C.UTF-8
 ENV PYTHON_VERSION=3.9
 
 # Copy the necessary files (your code, requirements.txt, etc.)
-COPY ./main.py .
-COPY ./requirements.txt .
+COPY ./app/main.py .
+COPY ./app/requirements.txt .
 
 # Install Python dependencies from the requirements.txt file
 RUN pip3 install -r requirements.txt
