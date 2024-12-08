@@ -1,22 +1,18 @@
-# Start with the Amazon Linux base image
-FROM public.ecr.aws/lambda/python:3.9
+# Use slim Python image instead of AWS Lambda
+FROM python:3.9-slim
 
-# Set environment variables for Python version and working directory
-ENV LANG=C.UTF-8
-ENV PYTHON_VERSION=3.9
+# Set working directory
+WORKDIR /app
 
-# Install dependencies
-RUN yum update -y && \
-    yum install -y python3 python3-pip zip && \
-    yum clean all
+# Copy and install requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the necessary files (your code, requirements.txt, etc.)
-COPY ./main.py .
-COPY ./requirements.txt .
+# Copy application code
+COPY . .
 
-# Install Python dependencies from the requirements.txt file
-RUN pip3 install -r requirements.txt
+# Expose web port
+EXPOSE 8080
 
-RUN chmod -R 755 /var
-RUN chmod -R 755 /var/task
-RUN chmod +x /var/task/main.py
+# Use gunicorn to run the Flask app
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "main:app"]
