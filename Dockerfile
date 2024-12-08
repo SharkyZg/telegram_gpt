@@ -13,7 +13,6 @@ RUN yum update -y && \
 # Copy the necessary files (your code, requirements.txt, etc.)
 COPY ./main.py .
 COPY ./requirements.txt .
-COPY .env .
 
 # Install Python dependencies from the requirements.txt file
 RUN pip3 install -r requirements.txt
