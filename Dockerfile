@@ -4,11 +4,6 @@ FROM python:3.9-slim
 ENV LANG=C.UTF-8
 ENV PYTHON_VERSION=3.9
 
-# Install dependencies
-RUN yum update -y && \
-    yum install -y python3 python3-pip zip && \
-    yum clean all
-
 # Copy the necessary files (your code, requirements.txt, etc.)
 COPY ./main.py .
 COPY ./requirements.txt .
