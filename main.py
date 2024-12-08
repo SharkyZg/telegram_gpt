@@ -40,7 +40,7 @@ summary_prompt = PromptTemplate.from_template(template)
 summary_chain = summary_prompt | ChatOpenAI(model=os.getenv("GPT_MODEL"), temperature=os.getenv("MODEL_TEMPERATURE"))
 
 # Updated memory manager
-def get_memory(user_id):
+def get_chat_history(user_id):
     table_name = "InvoiceChat"
     chat_history = DynamoDBChatMessageHistory(
         table_name=table_name,
@@ -48,9 +48,8 @@ def get_memory(user_id):
         boto3_session=aws_session,  # Pass the boto3 session
         primary_key_name="UserID",  # Use the correct primary key
     )
-    memory = ConversationBufferMemory(chat_memory=chat_history, return_messages=True, output_key="output")
     
-    return memory
+    return chat_history
 
 # Start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -76,12 +75,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_input = update.message.text
 
-    # Initialize LangChain memory for this user
-    memory = get_memory(user_id)
+    # Get chat history
+    chat_history = get_chat_history(user_id)
 
     try:
-        # Get conversation history
-        raw_history = memory.chat_memory.messages  # LangChain message objects
+        # Retrieve conversation history
+        raw_history = chat_history.messages
 
         # Convert LangChain messages into ChatGPT-compatible format
         history = []
@@ -91,16 +90,18 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             elif isinstance(message, AIMessage):
                 history.append({"role": "assistant", "content": message.content})
 
-        # If summary_chain.invoke is synchronous, run it in an executor to avoid blocking
+        # Use summary_chain to generate response
         response = summary_chain.invoke(
-            {"input": user_input, "history": history}  # Pass the converted history here
+            {"input": user_input, "history": history}
         )
 
         print("Response:" + response.content)
 
-        # Save user input and response to memory
-        memory.save_context({"input": user_input}, {"output": response.content})
-        # Send response to the user
+        # Save user input and response to the history
+        chat_history.add_user_message(user_input)
+        chat_history.add_ai_message(response.content)
+
+        # Send response back to the user
         await context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=response.content
