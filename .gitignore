@@ -3,3 +3,6 @@ Pipfile
 Pipfile.lock
 .DS_Store
 tests/.pytest_cache
+.pytest_cache
+__pycache__
+tests/__pycache__
