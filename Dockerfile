@@ -10,7 +10,8 @@ WORKDIR /app
 COPY . .
 
 # Install Python dependencies from the requirements.txt file
-RUN pip3 install -r requirements.txt
+ARG REQUIREMENTS_FILE=requirements.txt
+RUN pip install -r $REQUIREMENTS_FILE
 
 # Command to run the app
 CMD ["python", "app.py"]

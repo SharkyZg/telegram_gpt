@@ -8,6 +8,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: test
 
     steps:
       # Step 1: Checkout the code
@@ -22,6 +23,8 @@ jobs:
       - name: Build Docker image
         run: docker build -t telegram-gpt .
 
-      # Step 4: Run tests in Docker container
+      # Step 4: Run tests in Docker container and set environment variables
       - name: Run tests
+        env:
+          TEST_ENV_VAR: ${{ secrets.TEST_ENV_VAR }}
         run: docker run --entrypoint pytest telegram-gpt tests/
