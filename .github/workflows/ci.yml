@@ -25,4 +25,6 @@ jobs:
 
       # Step 4: Run tests in Docker container
       - name: Run tests
+        env:
+          TEST_ENV_VAR: ${{ secrets.TEST_ENV_VAR }}
         run: docker run --entrypoint pytest telegram-gpt tests/
