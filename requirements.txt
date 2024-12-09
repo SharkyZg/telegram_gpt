@@ -9,4 +9,5 @@ langchain-community
 flask
 boto3
 pytest
+pytest-asyncio
 httpx

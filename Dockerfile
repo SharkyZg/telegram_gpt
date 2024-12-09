@@ -7,11 +7,10 @@ ENV PYTHON_VERSION=3.9
 WORKDIR /app
 
 # Copy the necessary files (your code, requirements.txt, etc.)
-COPY ./app.py .
-COPY ./requirements.txt .
+COPY . .
 
 # Install Python dependencies from the requirements.txt file
 RUN pip3 install -r requirements.txt
 
-# Command to run the application
+# Command to run the app
 CMD ["python", "app.py"]

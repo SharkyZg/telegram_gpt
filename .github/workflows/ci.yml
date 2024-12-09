@@ -24,4 +24,4 @@ jobs:
 
       # Step 4: Run tests in Docker container
       - name: Run tests
-        run: docker run --entrypoint pytest telegram-gpt
+        run: docker run --entrypoint pytest telegram-gpt tests/
