@@ -9,3 +9,4 @@ langchain-community
 flask
 boto3
 pytest
+httpx
