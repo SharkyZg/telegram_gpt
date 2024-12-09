@@ -7,16 +7,11 @@ ENV PYTHON_VERSION=3.9
 WORKDIR /app
 
 # Copy the necessary files (your code, requirements.txt, etc.)
-COPY ./main.py .
+COPY ./app.py .
 COPY ./requirements.txt .
 
 # Install Python dependencies from the requirements.txt file
 RUN pip3 install -r requirements.txt
-
-
-
-# Expose the port your application will run on
-EXPOSE 8080
 
 # Command to run the application
 CMD ["python", "app.py"]

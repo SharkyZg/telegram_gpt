@@ -1,4 +1,3 @@
-import os
 import pytest
 from telegram import Bot
 from telegram.request import HTTPXRequest
