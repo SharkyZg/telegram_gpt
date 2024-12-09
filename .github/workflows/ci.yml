@@ -23,7 +23,7 @@ jobs:
       - name: Build Docker image
         run: docker build -t telegram-gpt .
 
-      # Step 4: Run tests in Docker container
+      # Step 4: Run tests in Docker container and set environment variables
       - name: Run tests
         env:
           TEST_ENV_VAR: ${{ secrets.TEST_ENV_VAR }}
