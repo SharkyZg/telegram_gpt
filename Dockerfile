@@ -13,5 +13,5 @@ COPY ./requirements.txt .
 # Install Python dependencies from the requirements.txt file
 RUN pip3 install -r requirements.txt
 
-# Command to run the application
+# Command to run the app
 CMD ["python", "app.py"]
