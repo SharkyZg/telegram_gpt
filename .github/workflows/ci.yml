@@ -8,6 +8,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: test
 
     steps:
       # Step 1: Checkout the code
